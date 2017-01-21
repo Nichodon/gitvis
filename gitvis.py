@@ -11,7 +11,7 @@ def dragto(event):
 
 
 def create_node(x_pos, y_pos, data):
-    c1.create_oval(x_pos - 30, y_pos - 25, x_pos + 30, y_pos + 25, outline='red')
+    c1.create_oval(x_pos - 30, y_pos - 25, x_pos + 30, y_pos + 25)
     c1.create_text(x_pos, y_pos, text=data)
     c1.create_line(x_pos - 30, y_pos, x_pos - 70, y_pos, arrow=LAST)
 
@@ -45,7 +45,6 @@ c1.config(xscrollcommand=sc1.set, yscrollcommand=sc2.set)
 c1.grid(row=0, column=0)
 c1.bind('<ButtonPress-1>', mark)
 c1.bind('<B1-Motion>', dragto)
-create_node(200, 50, g[:7])
 
 lf2 = LabelFrame(tk, text='Information')
 lf2.grid(row=0, column=1)
@@ -53,12 +52,34 @@ lf2.grid(row=0, column=1)
 l1 = Label(lf2, text='[' + f + ']: ' + g[:7])
 l1.grid(row=0, column=0)
 
+
+create_node(500, 50, g[:7])
 with open('.git/objects/' + g[:2] + '/' + g[2:].rstrip()) as x:
     h = x.read()
 
 h = decompress(h)
 
 lines = h.split('\x00')
-create_node(100, 50, lines[1].split('parent ')[1][:7])
+line = lines[1].split('parent ')[1].split('author')[0]
+print h
+create_node(400, 50, line[:7])
+
+n = 300
+
+
+while True:
+    with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
+        h = x.read()
+
+    h = decompress(h)
+
+    lines = h.split('\x00')
+    try:
+        line = lines[1].split('parent ')[1].split('\n')[0]
+    except IndexError:
+        break
+    print h
+    create_node(n, 50, line[:7])
+    n -= 100
 
 mainloop()
