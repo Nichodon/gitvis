@@ -10,10 +10,13 @@ def dragto(event):
     event.widget.scan_dragto(event.x, event.y, gain=1)
 
 
-def create_node(x_pos, y_pos, data):
+def create_node(x_pos, y_pos, ends, data):
     c1.create_oval(x_pos - 30, y_pos - 25, x_pos + 30, y_pos + 25)
     c1.create_text(x_pos, y_pos, text=data)
-    c1.create_line(x_pos - 30, y_pos, x_pos - 70, y_pos, arrow=LAST)
+    for point in ends:
+        c1.create_line(x_pos - 30, y_pos, x_pos - 30, y_pos + point[1])
+        c1.create_line(x_pos - 30, y_pos + point[1], x_pos - 30 - point[0],
+                       y_pos + point[1], arrow=LAST)
 
 with open('.git/HEAD') as x:
     f = x.read()
@@ -31,7 +34,8 @@ tk.maxsize(width=750, height=500)
 lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
-c1 = Canvas(lf1, width=500, height=400, highlightthickness=0, scrollregion=(0, 0, 600, 500))
+c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
+            scrollregion=(0, 0, 600, 500))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
@@ -53,33 +57,22 @@ l1 = Label(lf2, text='[' + f + ']: ' + g[:7])
 l1.grid(row=0, column=0)
 
 
-create_node(500, 50, g[:7])
-with open('.git/objects/' + g[:2] + '/' + g[2:].rstrip()) as x:
-    h = x.read()
+create_node(500, 50, [[40, 0]], g[:7])
+line = g
 
-h = decompress(h)
-
-lines = h.split('\x00')
-line = lines[1].split('parent ')[1].split('author')[0]
-print h
-create_node(400, 50, line[:7])
-
-n = 300
+n = 400
 
 
-while True:
+while n >= 100:
     with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
         h = x.read()
 
     h = decompress(h)
 
     lines = h.split('\x00')
-    try:
-        line = lines[1].split('parent ')[1].split('\n')[0]
-    except IndexError:
-        break
-    print h
-    create_node(n, 50, line[:7])
+    line = lines[1].split('parent ')[1].split('\n')[0]
+
+    create_node(n, 50, [[40, 0]] if n > 100 else [], line[:7])
     n -= 100
 
 mainloop()
