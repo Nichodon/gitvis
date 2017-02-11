@@ -8,7 +8,7 @@ class Node:
     def __init__(self, pos, ends, data):
         self.pos = pos
         self.ends = ends
-        self.data = data
+        self.data = data.rstrip()
 
 
 def mark(event):
@@ -24,12 +24,18 @@ def draw_node(canvas, node):
     ends = node.ends
     data = node.data
     canvas.create_oval(pos[0] - 30, pos[1] - 25, pos[0] + 30, pos[1] + 25)
-    canvas.create_text(pos[0], pos[1], text=data)
+    canvas.create_text(pos[0], pos[1], text=data[:7])
     for point in ends:
         canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30, pos[1] + point[1])
         canvas.create_line(pos[0] - 30, pos[1] + point[1],
                            pos[0] - 30 - point[0], pos[1] + point[1],
                            arrow=LAST)
+
+
+def has_parent(node):
+    data = node.data
+    with open('.git/objects/' + data[:2] + '/' + data[2:]) as i:
+        return 'parent' in decompress(i.read())
 
 with open('.git/HEAD') as x:
     f = x.read()
@@ -40,12 +46,12 @@ f = f[5:].rstrip()
 with open('.git/' + f) as x:
     first_node = x.read()
 
-nodes.append(Node([600, 50], [[40, 0]], first_node[:7]))
+nodes.append(Node([700, 50], [[40, 0]], first_node))
 line = first_node
 
-n = 500
+n = 600
 
-while n >= 100:
+while has_parent(nodes[-1]):
     with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
         h = x.read()
 
@@ -54,7 +60,8 @@ while n >= 100:
     lines = h.split('\x00')
     line = lines[1].split('parent ')[1].split('\n')[0]
 
-    nodes.append(Node([n, 50], [[40, 0]] if n > 100 else [], line[:7]))
+    nodes.append(Node([n, 50], [[40, 0]] if n > 100 else [], line))
+    print has_parent(Node([n, 50], [[40, 0]] if n > 100 else [], line))
     n -= 100
 
 tk = Tk()
@@ -66,7 +73,7 @@ lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
-            scrollregion=(0, 0, 700, 400))
+            scrollregion=(0, 0, 800, 400))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
