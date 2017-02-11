@@ -1,6 +1,15 @@
 from Tkinter import *
 from zlib import *
 
+nodes = []
+
+
+class Node:
+    def __init__(self, pos, ends, data):
+        self.pos = pos
+        self.ends = ends
+        self.data = data
+
 
 def mark(event):
     event.widget.scan_mark(event.x, event.y)
@@ -10,21 +19,43 @@ def dragto(event):
     event.widget.scan_dragto(event.x, event.y, gain=1)
 
 
-def create_node(x_pos, y_pos, ends, data):
-    c1.create_oval(x_pos - 30, y_pos - 25, x_pos + 30, y_pos + 25)
-    c1.create_text(x_pos, y_pos, text=data)
+def draw_node(canvas, node):
+    pos = node.pos
+    ends = node.ends
+    data = node.data
+    canvas.create_oval(pos[0] - 30, pos[1] - 25, pos[0] + 30, pos[1] + 25)
+    canvas.create_text(pos[0], pos[1], text=data)
     for point in ends:
-        c1.create_line(x_pos - 30, y_pos, x_pos - 30, y_pos + point[1])
-        c1.create_line(x_pos - 30, y_pos + point[1], x_pos - 30 - point[0],
-                       y_pos + point[1], arrow=LAST)
+        canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30, pos[1] + point[1])
+        canvas.create_line(pos[0] - 30, pos[1] + point[1],
+                           pos[0] - 30 - point[0], pos[1] + point[1],
+                           arrow=LAST)
 
 with open('.git/HEAD') as x:
     f = x.read()
 
 f = f[5:].rstrip()
+# "ref: " is now removed
 
 with open('.git/' + f) as x:
-    g = x.read()
+    first_node = x.read()
+
+nodes.append(Node([600, 50], [[40, 0]], first_node[:7]))
+line = first_node
+
+n = 500
+
+while n >= 100:
+    with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
+        h = x.read()
+
+    h = decompress(h)
+
+    lines = h.split('\x00')
+    line = lines[1].split('parent ')[1].split('\n')[0]
+
+    nodes.append(Node([n, 50], [[40, 0]] if n > 100 else [], line[:7]))
+    n -= 100
 
 tk = Tk()
 
@@ -35,7 +66,7 @@ lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
-            scrollregion=(0, 0, 600, 500))
+            scrollregion=(0, 0, 700, 400))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
@@ -53,26 +84,10 @@ c1.bind('<B1-Motion>', dragto)
 lf2 = LabelFrame(tk, text='Information')
 lf2.grid(row=0, column=1)
 
-l1 = Label(lf2, text='[' + f + ']: ' + g[:7])
+l1 = Label(lf2, text='[' + f + ']: ' + first_node[:7])
 l1.grid(row=0, column=0)
 
-
-create_node(500, 50, [[40, 0]], g[:7])
-line = g
-
-n = 400
-
-
-while n >= 100:
-    with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
-        h = x.read()
-
-    h = decompress(h)
-
-    lines = h.split('\x00')
-    line = lines[1].split('parent ')[1].split('\n')[0]
-
-    create_node(n, 50, [[40, 0]] if n > 100 else [], line[:7])
-    n -= 100
+for n in nodes:
+    draw_node(c1, n)
 
 mainloop()
