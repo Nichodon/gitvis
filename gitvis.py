@@ -1,6 +1,17 @@
 from Tkinter import *
 from zlib import *
 
+'''
+
+To do:::
+
+Fix the drawing of arrows with everything
+Fix the placement of arrows with last and second to last
+Fix node placement that's half-way off
+
+'''
+
+
 nodes = []
 
 
@@ -96,5 +107,7 @@ l1.grid(row=0, column=0)
 
 for n in nodes:
     draw_node(c1, n)
+
+tk.wm_title('GitVis')
 
 mainloop()
