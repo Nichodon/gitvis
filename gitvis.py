@@ -3,16 +3,15 @@ from zlib import *
 
 '''
 
-To do:::
+Todo:::
 
-Fix the drawing of arrows with everything
-Fix the placement of arrows with last and second to last
-Fix node placement that's half-way off
+Nothing except everything else
 
 '''
 
 
 nodes = []
+commits = []
 
 
 class Node:
@@ -20,6 +19,12 @@ class Node:
         self.pos = pos
         self.ends = ends
         self.data = data.rstrip()
+
+
+class Commit:
+    def __init__(self, sha1, parents):
+        self.sha1 = sha1.rstrip()
+        self.parents = parents
 
 
 def mark(event):
@@ -44,7 +49,7 @@ def draw_node(canvas, node):
 
 
 def has_parent(node):
-    data = node.data
+    data = node.parents[0]
     with open('.git/objects/' + data[:2] + '/' + data[2:]) as i:
         return 'parent' in decompress(i.read())
 
@@ -57,22 +62,25 @@ f = f[5:].rstrip()
 with open('.git/' + f) as x:
     first_node = x.read()
 
-nodes.append(Node([700, 50], [[40, 0]], first_node))
 line = first_node
 
-n = 600
-
-while has_parent(nodes[-1]):
+while commits == [] or has_parent(commits[-1]):
     with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
         h = x.read()
-
     h = decompress(h)
-
     lines = h.split('\x00')
+    sha1_par = line
+    parents_par = list(filter(lambda l: l.startswith('parent '),
+                              lines[1].split('\n')))
+    parents_par = map(lambda l: l[len('parent '):], parents_par)
     line = lines[1].split('parent ')[1].split('\n')[0]
+    print str(parents_par)
+    commits.append(Commit(sha1_par, parents_par))
 
-    nodes.append(Node([n, 50], [[40, 0]] if n > 100 else [], line))
-    print has_parent(Node([n, 50], [[40, 0]] if n > 100 else [], line))
+n = len(commits) * 100
+
+for commit in commits:
+    nodes.append(Node([n, 50], [[40, 0]] if n > 100 else [], commit.sha1))
     n -= 100
 
 tk = Tk()
@@ -84,7 +92,7 @@ lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
-            scrollregion=(0, 0, 800, 400))
+            scrollregion=(0, 0, len(commits) * 100 + 200, 400))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
@@ -111,3 +119,13 @@ for n in nodes:
 tk.wm_title('GitVis')
 
 mainloop()
+
+'''
+
+Done:::
+
+Fix the drawing of arrows with everything
+Fix the placement of arrows with last and second to last
+Fix node placement that's half-way off
+
+'''
