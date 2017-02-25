@@ -54,12 +54,12 @@ def has_parent(node):
         return 'parent' in decompress(i.read())
 
 with open('.git/HEAD') as x:
-    f = x.read()
+    head = x.read()
 
-f = f[5:].rstrip()
+head = head[5:].rstrip()
 # "ref: " is now removed
 
-with open('.git/' + f) as x:
+with open('.git/' + head) as x:
     first_node = x.read()
 
 line = first_node
@@ -110,7 +110,7 @@ c1.bind('<B1-Motion>', dragto)
 lf2 = LabelFrame(tk, text='Information')
 lf2.grid(row=0, column=1)
 
-l1 = Label(lf2, text='[' + f + ']: ' + first_node[:7])
+l1 = Label(lf2, text='[' + head + ']: ' + first_node[:7])
 l1.grid(row=0, column=0)
 
 for n in nodes:
