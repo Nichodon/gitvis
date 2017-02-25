@@ -92,7 +92,7 @@ lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
-            scrollregion=(0, 0, len(commits) * 100 + 200, 400))
+            scrollregion=(0, 0, len(commits) * 100 + 100, 400))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
