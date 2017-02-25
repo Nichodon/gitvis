@@ -62,20 +62,21 @@ head = head[5:].rstrip()
 with open('.git/' + head) as x:
     first_node = x.read()
 
-line = first_node
+sha1_par = first_node
 
-while commits == [] or has_parent(commits[-1]):
-    with open('.git/objects/' + line[:2] + '/' + line[2:].rstrip()) as x:
-        h = x.read()
-    h = decompress(h)
-    lines = h.split('\x00')
-    sha1_par = line
+while True:
+    with open('.git/objects/' + sha1_par[:2] + '/' + sha1_par[2:].rstrip()) as \
+            x:
+        commit_body = x.read()
+    commit_body = decompress(commit_body)
+    lines = commit_body.split('\x00')
     parents_par = list(filter(lambda l: l.startswith('parent '),
                               lines[1].split('\n')))
     parents_par = map(lambda l: l[len('parent '):], parents_par)
-    line = lines[1].split('parent ')[1].split('\n')[0]
-    print str(parents_par)
     commits.append(Commit(sha1_par, parents_par))
+    if len(lines[1].split('parent ')) == 1:
+        break
+    sha1_par = lines[1].split('parent ')[1].split('\n')[0]
 
 n = len(commits) * 100
 
