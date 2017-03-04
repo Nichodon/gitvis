@@ -105,8 +105,12 @@ tk.maxsize(width=750, height=500)
 lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
+width = 0
+for branch in branches:
+    width = max(width, len(branch))
+
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
-            scrollregion=(0, 0, len(branches) * 100 + 100 + 1000, 400))
+            scrollregion=(0, 0, width * 100 + 100, 400))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
