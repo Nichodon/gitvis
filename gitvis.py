@@ -28,6 +28,17 @@ class Commit:
         self.sha1 = sha1.rstrip()
         self.parents = parents
 
+    def get_parents(self):
+        if not self.parents:
+            with open('.git/objects/' + self.sha1[:2] + '/' + self.sha1[2:]) as i:
+                body = i.read()
+            body = decompress(body)
+            line_list = body.split('\x00')
+            self.parents = list(filter(lambda l: l.startswith('parent '),
+                                       line_list[1].split('\n')))
+            self.parents = map(lambda l: l[len('parent '):], self.parents)
+        return self.parents
+
 
 def mark(event):
     event.widget.scan_mark(event.x, event.y)
