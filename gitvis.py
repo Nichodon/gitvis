@@ -1,5 +1,7 @@
 from Tkinter import *
 from zlib import *
+from os import listdir
+from os.path import isfile, join
 
 '''
 
@@ -11,7 +13,7 @@ Nothing except everything else
 
 
 nodes = []
-commits = []
+branches = []
 
 
 class Node:
@@ -56,33 +58,44 @@ def has_parent(node):
 with open('.git/HEAD') as x:
     head = x.read()
 
-head = head[5:].rstrip()
+branch_names = [f for f in listdir('.git/refs/heads') if
+            isfile(join('.git/refs/heads', f))]
+
+for branch_name in branch_names:
+    branch_commits = []
+    print branch_name
+#branch_name = head[5:].rstrip()
 # "ref: " is now removed
 
-with open('.git/' + head) as x:
-    first_node = x.read()
+    with open('.git/refs/heads/' + branch_name) as x:
+        first_node = x.read()
 
-sha1_par = first_node
+    sha1_par = first_node
 
-while True:
-    with open('.git/objects/' + sha1_par[:2] + '/' + sha1_par[2:].rstrip()) as \
-            x:
-        commit_body = x.read()
-    commit_body = decompress(commit_body)
-    lines = commit_body.split('\x00')
-    parents_par = list(filter(lambda l: l.startswith('parent '),
-                              lines[1].split('\n')))
-    parents_par = map(lambda l: l[len('parent '):], parents_par)
-    commits.append(Commit(sha1_par, parents_par))
-    if len(lines[1].split('parent ')) == 1:
-        break
-    sha1_par = lines[1].split('parent ')[1].split('\n')[0]
+    while True:
+        with open('.git/objects/' + sha1_par[:2] + '/' + sha1_par[2:].rstrip()) as \
+                x:
+            commit_body = x.read()
+        commit_body = decompress(commit_body)
+        lines = commit_body.split('\x00')
+        parents_par = list(filter(lambda l: l.startswith('parent '),
+                                  lines[1].split('\n')))
+        parents_par = map(lambda l: l[len('parent '):], parents_par)
+        branch_commits.append(Commit(sha1_par, parents_par))
+        if len(lines[1].split('parent ')) == 1:
+            break
+        sha1_par = lines[1].split('parent ')[1].split('\n')[0]
 
-n = len(commits) * 100
+    branches.append(branch_commits)
 
-for commit in commits:
-    nodes.append(Node([n, 50], [[40, 0]] if n > 100 else [], commit.sha1))
-    n -= 100
+n = 50
+for branch in branches:
+    m = len(branch) * 100
+    for commit in branch:
+        nodes.append(Node([m, n], [[40, 0]] if m > 100 else [], commit.sha1))
+        m -= 100
+    n += 100
+    print str(n)
 
 tk = Tk()
 
@@ -93,7 +106,7 @@ lf1 = LabelFrame(tk, text='Tree')
 lf1.grid(row=0, column=0)
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
-            scrollregion=(0, 0, len(commits) * 100 + 100, 400))
+            scrollregion=(0, 0, len(branches) * 100 + 100 + 1000, 400))
 
 sc1 = Scrollbar(lf1, orient=HORIZONTAL)
 sc1.grid(row=1, column=0, sticky='we')
@@ -111,7 +124,7 @@ c1.bind('<B1-Motion>', dragto)
 lf2 = LabelFrame(tk, text='Information')
 lf2.grid(row=0, column=1)
 
-l1 = Label(lf2, text='[' + head + ']: ' + first_node[:7])
+l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
 l1.grid(row=0, column=0)
 
 for n in nodes:
