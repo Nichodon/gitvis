@@ -7,7 +7,7 @@ from os.path import isfile, join
 
 Todo:::
 
-Nothing except everything else
+Duplicate commits
 
 '''
 
@@ -30,7 +30,8 @@ class Commit:
 
     def get_parents(self):
         if not self.parents:
-            with open('.git/objects/' + self.sha1[:2] + '/' + self.sha1[2:]) as i:
+            with open('.git/objects/' + self.sha1[:2] + '/' + self.sha1[2:]) \
+                    as i:
                 body = i.read()
             body = decompress(body)
             line_list = body.split('\x00')
@@ -70,13 +71,11 @@ with open('.git/HEAD') as x:
     head = x.read()
 
 branch_names = [f for f in listdir('.git/refs/heads') if
-            isfile(join('.git/refs/heads', f))]
+                isfile(join('.git/refs/heads', f))]
 
+commits = {}
 for branch_name in branch_names:
     branch_commits = []
-    print branch_name
-#branch_name = head[5:].rstrip()
-# "ref: " is now removed
 
     with open('.git/refs/heads/' + branch_name) as x:
         first_node = x.read()
@@ -84,8 +83,8 @@ for branch_name in branch_names:
     sha1_par = first_node
 
     while True:
-        with open('.git/objects/' + sha1_par[:2] + '/' + sha1_par[2:].rstrip()) as \
-                x:
+        with open('.git/objects/' + sha1_par[:2] + '/' +
+                  sha1_par[2:].rstrip()) as x:
             commit_body = x.read()
         commit_body = decompress(commit_body)
         lines = commit_body.split('\x00')
@@ -93,6 +92,7 @@ for branch_name in branch_names:
                                   lines[1].split('\n')))
         parents_par = map(lambda l: l[len('parent '):], parents_par)
         branch_commits.append(Commit(sha1_par, parents_par))
+        commits[sha1_par] = Commit(sha1_par, parents_par)
         if len(lines[1].split('parent ')) == 1:
             break
         sha1_par = lines[1].split('parent ')[1].split('\n')[0]
@@ -106,7 +106,8 @@ for branch in branches:
         nodes.append(Node([m, n], [[40, 0]] if m > 100 else [], commit.sha1))
         m -= 100
     n += 100
-    print str(n)
+
+print str(commits)
 
 tk = Tk()
 
@@ -148,13 +149,3 @@ for n in nodes:
 tk.wm_title('GitVis')
 
 mainloop()
-
-'''
-
-Done:::
-
-Fix the drawing of arrows with everything
-Fix the placement of arrows with last and second to last
-Fix node placement that's half-way off
-
-'''
