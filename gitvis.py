@@ -2,6 +2,7 @@ from Tkinter import *
 from zlib import *
 from os import listdir
 from os.path import isfile, join
+from pprint import  pprint
 
 '''
 
@@ -12,6 +13,7 @@ Duplicate commits
 '''
 
 
+graph = {}
 nodes = []
 branches = []
 
@@ -39,6 +41,21 @@ class Commit:
                                        line_list[1].split('\n')))
             self.parents = map(lambda l: l[len('parent '):], self.parents)
         return self.parents
+
+
+def find_all_paths(graph, start, end, path=[]):
+    path = path + [start]
+    if start == end:
+        return [path]
+    if not graph.has_key(start):
+        return []
+    paths = []
+    for node in graph[start]:
+        if node not in path:
+            newpaths = find_all_paths(graph, node, end, path)
+            for newpath in newpaths:
+                paths.append(newpath)
+    return paths
 
 
 def mark(event):
@@ -73,7 +90,6 @@ with open('.git/HEAD') as x:
 branch_names = [f for f in listdir('.git/refs/heads') if
                 isfile(join('.git/refs/heads', f))]
 
-commits = {}
 for branch_name in branch_names:
     branch_commits = []
 
@@ -92,12 +108,19 @@ for branch_name in branch_names:
                                   lines[1].split('\n')))
         parents_par = map(lambda l: l[len('parent '):], parents_par)
         branch_commits.append(Commit(sha1_par, parents_par))
-        commits[sha1_par] = Commit(sha1_par, parents_par)
+        graph[sha1_par] = parents_par
         if len(lines[1].split('parent ')) == 1:
             break
         sha1_par = lines[1].split('parent ')[1].split('\n')[0]
 
     branches.append(branch_commits)
+
+pprint(graph)
+allpaths = find_all_paths(graph, '8cc0f8e96ac33c63684fc82f2df338b9c8b367ee\n',
+                         '4d1d35dcfc07a34c34efde4b87e2b50bf4d1a9c4')
+
+allpaths.sort(key=lambda e: -len(e))
+pprint(allpaths)
 
 n = 50
 for branch in branches:
@@ -106,8 +129,6 @@ for branch in branches:
         nodes.append(Node([m, n], [[40, 0]] if m > 100 else [], commit.sha1))
         m -= 100
     n += 100
-
-print str(commits)
 
 tk = Tk()
 
