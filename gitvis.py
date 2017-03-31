@@ -14,7 +14,6 @@ Duplicate commits
 
 
 graph = {}
-branches = []
 
 
 class Node:
@@ -112,8 +111,6 @@ for branch_name in branch_names:
             break
         sha1_par = lines[1].split('parent ')[1].split('\n')[0]
 
-    branches.append(branch_commits)
-
 pprint(graph)
 allpaths = find_all_paths(graph, '8cc0f8e96ac33c63684fc82f2df338b9c8b367ee\n',
                          '4d1d35dcfc07a34c34efde4b87e2b50bf4d1a9c4')
@@ -130,8 +127,6 @@ lf1 = LabelFrame(tk, text='Tree', relief=SOLID, border=1)
 lf1.grid(row=0, column=0)
 
 width = 0
-for branch in branches:
-    width = max(width, len(branch))
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
             scrollregion=(0, 0, width * 100 + 100, 400))
