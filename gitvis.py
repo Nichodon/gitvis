@@ -2,7 +2,7 @@ from Tkinter import *
 from zlib import *
 from os import listdir
 from os.path import isfile, join
-from pprint import  pprint
+from pprint import pprint
 
 '''
 
@@ -14,7 +14,6 @@ Duplicate commits
 
 
 graph = {}
-nodes = []
 branches = []
 
 
@@ -122,14 +121,6 @@ allpaths = find_all_paths(graph, '8cc0f8e96ac33c63684fc82f2df338b9c8b367ee\n',
 allpaths.sort(key=lambda e: -len(e))
 pprint(allpaths)
 
-n = 50
-for branch in branches:
-    m = len(branch) * 100
-    for commit in branch:
-        nodes.append(Node([m, n], [[40, 0]] if m > 100 else [], commit.sha1))
-        m -= 100
-    n += 100
-
 tk = Tk()
 
 tk.minsize(width=750, height=500)
@@ -163,9 +154,6 @@ lf2.grid(row=0, column=1)
 
 l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
 l1.grid(row=0, column=0)
-
-for n in nodes:
-    draw_node(c1, n)
 
 tk.wm_title('GitVis')
 
