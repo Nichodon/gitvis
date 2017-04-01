@@ -23,24 +23,6 @@ class Node:
         self.data = data.rstrip()
 
 
-class Commit:
-    def __init__(self, sha1, parents):
-        self.sha1 = sha1.rstrip()
-        self.parents = parents
-
-    def get_parents(self):
-        if not self.parents:
-            with open('.git/objects/' + self.sha1[:2] + '/' + self.sha1[2:]) \
-                    as i:
-                body = i.read()
-            body = decompress(body)
-            line_list = body.split('\x00')
-            self.parents = list(filter(lambda l: l.startswith('parent '),
-                                       line_list[1].split('\n')))
-            self.parents = map(lambda l: l[len('parent '):], self.parents)
-        return self.parents
-
-
 def find_all_paths(graph, start, end, path=[]):
     path = path + [start]
     if start == end:
@@ -89,7 +71,6 @@ branch_names = [f for f in listdir('.git/refs/heads') if
                 isfile(join('.git/refs/heads', f))]
 
 for branch_name in branch_names:
-    branch_commits = []
 
     with open('.git/refs/heads/' + branch_name) as x:
         first_node = x.read()
@@ -105,7 +86,6 @@ for branch_name in branch_names:
         parents_par = list(filter(lambda l: l.startswith('parent '),
                                   lines[1].split('\n')))
         parents_par = map(lambda l: l[len('parent '):], parents_par)
-        branch_commits.append(Commit(sha1_par, parents_par))
         graph[sha1_par] = parents_par
         if len(lines[1].split('parent ')) == 1:
             break
