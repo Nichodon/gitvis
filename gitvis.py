@@ -64,9 +64,6 @@ def has_parent(node):
     with open('.git/objects/' + data[:2] + '/' + data[2:]) as i:
         return 'parent' in decompress(i.read())
 
-with open('.git/HEAD') as x:
-    head = x.read()
-
 branch_names = [f for f in listdir('.git/refs/heads') if
                 isfile(join('.git/refs/heads', f))]
 
