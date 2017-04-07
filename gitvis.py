@@ -8,7 +8,8 @@ from pprint import pprint
 
 Todo:::
 
-Duplicate commits
+Everything visual is borken
+Parsing pack
 
 '''
 
@@ -67,12 +68,16 @@ def has_parent(node):
 branch_names = [f for f in listdir('.git/refs/heads') if
                 isfile(join('.git/refs/heads', f))]
 
+branch_tips = []
+
+
 for branch_name in branch_names:
 
     with open('.git/refs/heads/' + branch_name) as x:
         first_node = x.read()
 
-    sha1_par = first_node
+    sha1_par = first_node.rstrip()
+    branch_tips.append(sha1_par)
 
     while True:
         with open('.git/objects/' + sha1_par[:2] + '/' +
@@ -88,12 +93,22 @@ for branch_name in branch_names:
             break
         sha1_par = lines[1].split('parent ')[1].split('\n')[0]
 
-pprint(graph)
+#pprint(graph)
 allpaths = find_all_paths(graph, '8cc0f8e96ac33c63684fc82f2df338b9c8b367ee\n',
                          '4d1d35dcfc07a34c34efde4b87e2b50bf4d1a9c4')
+root = graph.keys()[graph.values().index([])]
 
 allpaths.sort(key=lambda e: -len(e))
-pprint(allpaths)
+#pprint(allpaths)
+
+#pprint(branch_tips)
+
+the_paths = []
+for tip in branch_tips:
+    the_paths.extend(find_all_paths(graph, tip, root))
+
+the_paths.sort(key=lambda e: -len(e))
+pprint(the_paths)
 
 tk = Tk()
 
