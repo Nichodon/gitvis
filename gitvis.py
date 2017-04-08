@@ -108,7 +108,7 @@ for tip in branch_tips:
     the_paths.extend(find_all_paths(graph, tip, root))
 
 the_paths.sort(key=lambda e: -len(e))
-pprint(the_paths)
+the_paths[0]
 
 tk = Tk()
 
@@ -118,7 +118,7 @@ tk.maxsize(width=750, height=500)
 lf1 = LabelFrame(tk, text='Tree', relief=SOLID, border=1)
 lf1.grid(row=0, column=0)
 
-width = 0
+width = len(the_paths[0])
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
             scrollregion=(0, 0, width * 100 + 100, 400))
@@ -143,5 +143,14 @@ l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
 l1.grid(row=0, column=0)
 
 tk.wm_title('GitVis')
+
+n = width * 100 + 100
+for sha1 in the_paths[0][0:-1]:
+    n -= 100
+    node = Node([n, 100], [[40, 0]], sha1)
+    draw_node(c1, node)
+n -= 100
+node = Node([n, 100], [], the_paths[0][-1])
+draw_node(c1, node)
 
 mainloop()
