@@ -2,20 +2,19 @@ from Tkinter import *
 from zlib import *
 from os import listdir
 from os.path import isfile, join
-from pprint import  pprint
+from pprint import pprint
 
 '''
 
 Todo:::
 
-Duplicate commits
+Everything visual is borken
+Parsing pack
 
 '''
 
 
 graph = {}
-nodes = []
-branches = []
 
 
 class Node:
@@ -23,24 +22,6 @@ class Node:
         self.pos = pos
         self.ends = ends
         self.data = data.rstrip()
-
-
-class Commit:
-    def __init__(self, sha1, parents):
-        self.sha1 = sha1.rstrip()
-        self.parents = parents
-
-    def get_parents(self):
-        if not self.parents:
-            with open('.git/objects/' + self.sha1[:2] + '/' + self.sha1[2:]) \
-                    as i:
-                body = i.read()
-            body = decompress(body)
-            line_list = body.split('\x00')
-            self.parents = list(filter(lambda l: l.startswith('parent '),
-                                       line_list[1].split('\n')))
-            self.parents = map(lambda l: l[len('parent '):], self.parents)
-        return self.parents
 
 
 def find_all_paths(graph, start, end, path=[]):
@@ -84,19 +65,19 @@ def has_parent(node):
     with open('.git/objects/' + data[:2] + '/' + data[2:]) as i:
         return 'parent' in decompress(i.read())
 
-with open('.git/HEAD') as x:
-    head = x.read()
-
 branch_names = [f for f in listdir('.git/refs/heads') if
                 isfile(join('.git/refs/heads', f))]
 
+branch_tips = []
+
+
 for branch_name in branch_names:
-    branch_commits = []
 
     with open('.git/refs/heads/' + branch_name) as x:
         first_node = x.read()
 
-    sha1_par = first_node
+    sha1_par = first_node.rstrip()
+    branch_tips.append(sha1_par)
 
     while True:
         with open('.git/objects/' + sha1_par[:2] + '/' +
@@ -107,28 +88,27 @@ for branch_name in branch_names:
         parents_par = list(filter(lambda l: l.startswith('parent '),
                                   lines[1].split('\n')))
         parents_par = map(lambda l: l[len('parent '):], parents_par)
-        branch_commits.append(Commit(sha1_par, parents_par))
         graph[sha1_par] = parents_par
         if len(lines[1].split('parent ')) == 1:
             break
         sha1_par = lines[1].split('parent ')[1].split('\n')[0]
 
-    branches.append(branch_commits)
-
-pprint(graph)
+#pprint(graph)
 allpaths = find_all_paths(graph, '8cc0f8e96ac33c63684fc82f2df338b9c8b367ee\n',
                          '4d1d35dcfc07a34c34efde4b87e2b50bf4d1a9c4')
+root = graph.keys()[graph.values().index([])]
 
 allpaths.sort(key=lambda e: -len(e))
-pprint(allpaths)
+#pprint(allpaths)
 
-n = 50
-for branch in branches:
-    m = len(branch) * 100
-    for commit in branch:
-        nodes.append(Node([m, n], [[40, 0]] if m > 100 else [], commit.sha1))
-        m -= 100
-    n += 100
+#pprint(branch_tips)
+
+the_paths = []
+for tip in branch_tips:
+    the_paths.extend(find_all_paths(graph, tip, root))
+
+the_paths.sort(key=lambda e: -len(e))
+the_paths[0]
 
 tk = Tk()
 
@@ -138,9 +118,7 @@ tk.maxsize(width=750, height=500)
 lf1 = LabelFrame(tk, text='Tree', relief=SOLID, border=1)
 lf1.grid(row=0, column=0)
 
-width = 0
-for branch in branches:
-    width = max(width, len(branch))
+width = len(the_paths[0])
 
 c1 = Canvas(lf1, width=500, height=400, highlightthickness=0,
             scrollregion=(0, 0, width * 100 + 100, 400))
@@ -164,9 +142,15 @@ lf2.grid(row=0, column=1)
 l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
 l1.grid(row=0, column=0)
 
-for n in nodes:
-    draw_node(c1, n)
-
 tk.wm_title('GitVis')
+
+n = width * 100 + 100
+for sha1 in the_paths[0][0:-1]:
+    n -= 100
+    node = Node([n, 100], [[40, 0]], sha1)
+    draw_node(c1, node)
+n -= 100
+node = Node([n, 100], [], the_paths[0][-1])
+draw_node(c1, node)
 
 mainloop()
