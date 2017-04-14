@@ -10,6 +10,7 @@ Todo:::
 
 Everything visual is borken
 Parsing pack
+MUST BE MORE PATHS
 
 '''
 
@@ -112,8 +113,8 @@ the_paths[0]
 
 tk = Tk()
 
-tk.minsize(width=750, height=500)
-tk.maxsize(width=750, height=500)
+tk.minsize(width=580, height=500)
+tk.maxsize(width=580, height=500)
 
 lf1 = LabelFrame(tk, text='Tree', relief=SOLID, border=1)
 lf1.grid(row=0, column=0)
@@ -136,11 +137,11 @@ c1.grid(row=0, column=0)
 c1.bind('<ButtonPress-1>', mark)
 c1.bind('<B1-Motion>', dragto)
 
-lf2 = LabelFrame(tk, text='Information', relief=SOLID, border=1)
-lf2.grid(row=0, column=1)
+#lf2 = LabelFrame(tk, text='Information', relief=SOLID, border=1)
+#lf2.grid(row=0, column=1)
 
-l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
-l1.grid(row=0, column=0)
+#l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
+#l1.grid(row=0, column=0)
 
 tk.wm_title('GitVis')
 
