@@ -17,6 +17,11 @@ MUST BE MORE PATHS
 
 graph = {}
 
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
 
 class Node:
     def __init__(self, pos, ends, data):
@@ -29,7 +34,7 @@ def find_all_paths(graph, start, end, path=[]):
     path = path + [start]
     if start == end:
         return [path]
-    if not graph.has_key(start):
+    if start not in graph:
         return []
     paths = []
     for node in graph[start]:
@@ -109,12 +114,11 @@ for tip in branch_tips:
     the_paths.extend(find_all_paths(graph, tip, root))
 
 the_paths.sort(key=lambda e: -len(e))
-the_paths[0]
 
 tk = Tk()
 
-tk.minsize(width=580, height=500)
-tk.maxsize(width=580, height=500)
+tk.minsize(width=520, height=500)
+tk.maxsize(width=520, height=500)
 
 lf1 = LabelFrame(tk, text='Tree', relief=SOLID, border=1)
 lf1.grid(row=0, column=0)
@@ -145,13 +149,26 @@ c1.bind('<B1-Motion>', dragto)
 
 tk.wm_title('GitVis')
 
+positions = {}
+
 n = width * 100 + 100
 for sha1 in the_paths[0][0:-1]:
+    positions[sha1] = Point(n, 100)
     n -= 100
     node = Node([n, 100], [[40, 0]], sha1)
     draw_node(c1, node)
 n -= 100
 node = Node([n, 100], [], the_paths[0][-1])
 draw_node(c1, node)
+
+pprint(the_paths[1])
+
+for path in the_paths:
+    for sha1 in path:
+        if sha1 in positions:
+            print '.',
+        else:
+            print '@',
+    print
 
 mainloop()
