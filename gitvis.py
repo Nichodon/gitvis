@@ -160,15 +160,28 @@ for sha1 in the_paths[0][0:-1]:
 n -= 100
 node = Node([n, 100], [], the_paths[0][-1])
 draw_node(c1, node)
+positions[the_paths[0][-1]] = Point(n, 100)
 
 pprint(the_paths[1])
+o = 100
 
 for path in the_paths:
+    n = width * 100 + 100
+    started = False
     for sha1 in path:
         if sha1 in positions:
             print '.',
+            started = False
         else:
             print '@',
+            if not started :
+                o += 75
+            started = True
+        if started:
+            node = Node([n, o], [[40, 0]], sha1)
+            draw_node(c1, node)
+        positions[sha1] = 0
+        n -= 100
     print
 
 mainloop()
