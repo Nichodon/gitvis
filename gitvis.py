@@ -8,9 +8,8 @@ from pprint import pprint
 
 Todo:::
 
-Everything visual is borken
+Arrows don't work
 Parsing pack
-MUST BE MORE PATHS
 
 '''
 
@@ -153,14 +152,12 @@ positions = {}
 
 n = width * 100 + 100
 for sha1 in the_paths[0][0:-1]:
-    positions[sha1] = Point(n, 100)
     n -= 100
     node = Node([n, 100], [[40, 0]], sha1)
-    draw_node(c1, node)
+    positions[sha1] = node
 n -= 100
 node = Node([n, 100], [], the_paths[0][-1])
-draw_node(c1, node)
-positions[the_paths[0][-1]] = Point(n, 100)
+positions[the_paths[0][-1]] = node
 
 pprint(the_paths[1])
 o = 100
@@ -168,20 +165,25 @@ o = 100
 for path in the_paths:
     n = width * 100 + 100
     started = False
-    for sha1 in path:
+    for i in range(len(path)):
+        sha1 = path[i]
         if sha1 in positions:
             print '.',
             started = False
         else:
             print '@',
-            if not started :
+            if not started:
                 o += 75
+                positions[path[i - 1]].ends.append(
+                    [40, o - positions[path[i - 1]].pos[1]])
             started = True
+        n -= 100
         if started:
             node = Node([n, o], [[40, 0]], sha1)
-            draw_node(c1, node)
-        positions[sha1] = 0
-        n -= 100
+            positions[sha1] = node
     print
+
+for position in positions:
+    draw_node(c1, positions[position])
 
 mainloop()
