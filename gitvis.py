@@ -59,10 +59,16 @@ def draw_node(canvas, node):
     canvas.create_oval(pos[0] - 30, pos[1] - 25, pos[0] + 30, pos[1] + 25)
     canvas.create_text(pos[0], pos[1], text=data[:7])
     for point in ends:
-        canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30, pos[1] + point[1])
-        canvas.create_line(pos[0] - 30, pos[1] + point[1],
-                           pos[0] - 30 - point[0], pos[1] + point[1],
-                           arrow=LAST)
+        if point[1] >= 0:
+            canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30, pos[1] +
+                               point[1])
+            canvas.create_line(pos[0] - 30, pos[1] + point[1],
+                               pos[0] - 30 - point[0], pos[1] + point[1],
+                               arrow=LAST)
+        else:
+            canvas.create_line(pos[0] - 30, pos[1], pos[0] - point[0], pos[1])
+            canvas.create_line(pos[0] - point[0], pos[1], pos[0] - point[0],
+                               pos[1] + point[1]+25, arrow=LAST)
 
 
 def has_parent(node):
@@ -168,7 +174,12 @@ for path in the_paths:
     for i in range(len(path)):
         sha1 = path[i]
         if sha1 in positions:
-            print '.',
+            if started:
+                other = positions[path[i - 1]]
+                this = positions[sha1]
+                other.ends.append([other.pos[0] - this.pos[0], -other.pos[1] + this.pos[1]])
+                print other.data
+            print 'a' if started else '.',
             started = False
         else:
             print '@',
@@ -179,7 +190,7 @@ for path in the_paths:
             started = True
         n -= 100
         if started:
-            node = Node([n, o], [[40, 0]], sha1)
+            node = Node([n, o], [[40, 0]] if path[i + 1] not in positions else [], sha1)
             positions[sha1] = node
     print
 
