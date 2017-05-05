@@ -59,10 +59,12 @@ def draw_node(canvas, node):
     canvas.create_oval(pos[0] - 30, pos[1] - 25, pos[0] + 30, pos[1] + 25)
     canvas.create_text(pos[0], pos[1], text=data[:7])
     for point in ends:
-        if point[1] >= 0:
-            canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30, pos[1] +
+        if point[1] == 0:
+            canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30 - point[0], pos[1], arrow=LAST)
+        elif point[1] > 0:
+            canvas.create_line(pos[0], pos[1] + 25, pos[0], pos[1] +
                                point[1])
-            canvas.create_line(pos[0] - 30, pos[1] + point[1],
+            canvas.create_line(pos[0], pos[1] + point[1],
                                pos[0] - 30 - point[0], pos[1] + point[1],
                                arrow=LAST)
         else:
