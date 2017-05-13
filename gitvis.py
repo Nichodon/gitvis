@@ -8,8 +8,10 @@ from pprint import pprint
 
 Todo:::
 
-Arrows don't work
 Parsing pack
+Pack branch
+Nonsense repo overlapping
+Potential loopsg
 
 '''
 
@@ -54,10 +56,14 @@ def dragto(event):
 
 def draw_node(canvas, node):
     pos = node.pos
-    ends = node.ends
     data = node.data
-    canvas.create_oval(pos[0] - 30, pos[1] - 25, pos[0] + 30, pos[1] + 25)
+    canvas.create_oval(pos[0] - 30, pos[1] - 25, pos[0] + 30, pos[1] + 25, fill='#ffffff')
     canvas.create_text(pos[0], pos[1], text=data[:7])
+
+
+def draw_arrows(canvas, node):
+    pos = node.pos
+    ends = node.ends
     for point in ends:
         if point[1] == 0:
             canvas.create_line(pos[0] - 30, pos[1], pos[0] - 30 - point[0], pos[1], arrow=LAST)
@@ -167,7 +173,6 @@ n -= 100
 node = Node([n, 100], [], the_paths[0][-1])
 positions[the_paths[0][-1]] = node
 
-pprint(the_paths[1])
 o = 100
 
 for path in the_paths:
@@ -180,11 +185,8 @@ for path in the_paths:
                 other = positions[path[i - 1]]
                 this = positions[sha1]
                 other.ends.append([other.pos[0] - this.pos[0], -other.pos[1] + this.pos[1]])
-                print other.data
-            print 'a' if started else '.',
             started = False
         else:
-            print '@',
             if not started:
                 o += 75
                 positions[path[i - 1]].ends.append(
@@ -194,7 +196,11 @@ for path in the_paths:
         if started:
             node = Node([n, o], [[40, 0]] if path[i + 1] not in positions else [], sha1)
             positions[sha1] = node
-    print
+
+c1.config(scrollregion=(0, 0, width * 100 + 100, o + 100))
+
+for position in positions:
+    draw_arrows(c1, positions[position])
 
 for position in positions:
     draw_node(c1, positions[position])
