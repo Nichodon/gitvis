@@ -18,16 +18,6 @@ Potential loopsg
 
 graph = {}
 
-class Commit:
-    def __init__(self, sha1, date):
-        self.sha1 = sha1
-        self.date = date
-
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
 
 class Node:
     def __init__(self, pos, ends, data):
