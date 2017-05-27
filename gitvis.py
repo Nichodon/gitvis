@@ -18,6 +18,11 @@ Potential loopsg
 
 graph = {}
 
+class Commit:
+    def __init__(self, sha1, date):
+        self.sha1 = sha1
+        self.date = date
+
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -88,7 +93,7 @@ branch_names = [f for f in listdir('.git/refs/heads') if
                 isfile(join('.git/refs/heads', f))]
 
 branch_tips = []
-
+giant_commit_list = []
 
 for branch_name in branch_names:
 
@@ -107,10 +112,26 @@ for branch_name in branch_names:
         parents_par = list(filter(lambda l: l.startswith('parent '),
                                   lines[1].split('\n')))
         parents_par = map(lambda l: l[len('parent '):], parents_par)
+        commits_par = list(filter(lambda l: l.startswith('committer '),
+                                  lines[1].split('\n')))
+        commits_par = map(lambda l: l[len('committer '):], commits_par)[0].split(' ')[2:]
+        commits_par[0] = int(commits_par[0])
+        commits_par[0] += int(commits_par[1][:3]) * 3600 + int(commits_par[1][3:]) * 60
+        commits_par.append(sha1_par)
+        if commits_par not in giant_commit_list:
+            giant_commit_list.append(commits_par)
         graph[sha1_par] = parents_par
         if len(lines[1].split('parent ')) == 1:
             break
         sha1_par = lines[1].split('parent ')[1].split('\n')[0]
+
+
+
+giant_commit_list.sort(key=lambda y: y[0])
+for i in range(len(giant_commit_list)):
+    giant_commit_list[i].append((i + 1) * 100)
+pprint(giant_commit_list)
+
 
 #pprint(graph)
 allpaths = find_all_paths(graph, '8cc0f8e96ac33c63684fc82f2df338b9c8b367ee\n',
@@ -164,19 +185,22 @@ tk.wm_title('GitVis')
 
 positions = {}
 
-n = width * 100 + 100
+
+x = {}
+for gcl in giant_commit_list:
+    x[gcl[2]] = gcl[3]
+
+pprint(x)
+
 for sha1 in the_paths[0][0:-1]:
-    n -= 100
-    node = Node([n, 100], [[40, 0]], sha1)
+    node = Node([x[sha1], 100], [[40, 0]], sha1)
     positions[sha1] = node
-n -= 100
-node = Node([n, 100], [], the_paths[0][-1])
+node = Node([100, 100], [], the_paths[0][-1])
 positions[the_paths[0][-1]] = node
 
 o = 100
 
 for path in the_paths:
-    n = width * 100 + 100
     started = False
     for i in range(len(path)):
         sha1 = path[i]
@@ -192,9 +216,8 @@ for path in the_paths:
                 positions[path[i - 1]].ends.append(
                     [40, o - positions[path[i - 1]].pos[1]])
             started = True
-        n -= 100
         if started:
-            node = Node([n, o], [[40, 0]] if path[i + 1] not in positions else [], sha1)
+            node = Node([x[sha1], o], [[40, 0]] if path[i + 1] not in positions else [], sha1)
             positions[sha1] = node
 
 c1.config(scrollregion=(0, 0, width * 100 + 100, o + 100))
