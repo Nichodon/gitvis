@@ -165,12 +165,6 @@ c1.grid(row=0, column=0)
 c1.bind('<ButtonPress-1>', mark)
 c1.bind('<B1-Motion>', dragto)
 
-#lf2 = LabelFrame(tk, text='Information', relief=SOLID, border=1)
-#lf2.grid(row=0, column=1)
-
-#l1 = Label(lf2, text='[' + branch_name + ']: ' + first_node[:7])
-#l1.grid(row=0, column=0)
-
 tk.wm_title('GitVis')
 
 positions = {}
